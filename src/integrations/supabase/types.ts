@@ -14,33 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          created_at: string
+          id: string
+          promo_enabled: boolean
+          promo_prices: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          promo_enabled?: boolean
+          promo_prices?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          promo_enabled?: boolean
+          promo_prices?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_gallery: {
+        Row: {
+          created_at: string
+          generation_id: string | null
+          id: string
+          media_type: string
+          media_url: string | null
+          moderated_at: string | null
+          prompt: string
+          rejection_reason: string | null
+          status: string
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          moderated_at?: string | null
+          prompt: string
+          rejection_reason?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          moderated_at?: string | null
+          prompt?: string
+          rejection_reason?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_gallery_generation_id_fkey"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_usage: {
         Row: {
           created_at: string
           id: string
+          images_used: number
           seconds_used: number
           tier: string
           updated_at: string
           usage_date: string
           user_id: string
+          video_pause_until: string | null
+          videos_used: number
         }
         Insert: {
           created_at?: string
           id?: string
+          images_used?: number
           seconds_used?: number
           tier?: string
           updated_at?: string
           usage_date?: string
           user_id: string
+          video_pause_until?: string | null
+          videos_used?: number
         }
         Update: {
           created_at?: string
           id?: string
+          images_used?: number
           seconds_used?: number
           tier?: string
           updated_at?: string
           usage_date?: string
           user_id?: string
+          video_pause_until?: string | null
+          videos_used?: number
         }
         Relationships: []
       }
@@ -301,6 +387,7 @@ export type Database = {
           full_name: string | null
           id: string
           preferences: Json
+          promo_claimed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -311,6 +398,7 @@ export type Database = {
           full_name?: string | null
           id: string
           preferences?: Json
+          promo_claimed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -321,6 +409,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           preferences?: Json
+          promo_claimed_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -331,6 +420,8 @@ export type Database = {
           created_at: string
           ends_at: string | null
           id: string
+          is_active: boolean
+          plan_type: string | null
           started_at: string
           status: string
           tier: string
@@ -342,6 +433,8 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           id?: string
+          is_active?: boolean
+          plan_type?: string | null
           started_at?: string
           status?: string
           tier?: string
@@ -353,6 +446,8 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           id?: string
+          is_active?: boolean
+          plan_type?: string | null
           started_at?: string
           status?: string
           tier?: string
@@ -456,6 +551,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_quotas: {
+        Row: {
+          created_at: string
+          daily_video_limit_seconds: number
+          daily_video_remaining_seconds: number
+          daily_video_used_seconds: number
+          quota_period_end: string
+          quota_period_start: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_video_limit_seconds?: number
+          daily_video_remaining_seconds?: number
+          daily_video_used_seconds?: number
+          quota_period_end?: string
+          quota_period_start?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_video_limit_seconds?: number
+          daily_video_remaining_seconds?: number
+          daily_video_used_seconds?: number
+          quota_period_end?: string
+          quota_period_start?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -490,9 +618,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      plan_video_seconds: { Args: { _plan: string }; Returns: number }
+      refund_media_quota: {
+        Args: { _media_type: string; _user_id: string }
+        Returns: undefined
+      }
       refund_quota: {
         Args: { _seconds: number; _user_id: string }
         Returns: undefined
+      }
+      refund_video_seconds: {
+        Args: { _seconds: number; _user_id: string }
+        Returns: undefined
+      }
+      reserve_media_quota: {
+        Args: { _media_type: string; _user_id: string }
+        Returns: {
+          allowed: boolean
+          images_used: number
+          reason: string
+          retry_at: string
+          videos_used: number
+        }[]
       }
       reserve_quota: {
         Args: { _seconds: number; _user_id: string }
@@ -501,6 +648,19 @@ export type Database = {
           seconds_limit: number
           seconds_used: number
           tier: string
+        }[]
+      }
+      reserve_video_seconds: {
+        Args: { _seconds: number; _user_id: string }
+        Returns: {
+          allowed: boolean
+          expires_at: string
+          limit_seconds: number
+          period_end: string
+          plan_type: string
+          reason: string
+          remaining_seconds: number
+          used_seconds: number
         }[]
       }
       tier_daily_seconds: { Args: { _tier: string }; Returns: number }
