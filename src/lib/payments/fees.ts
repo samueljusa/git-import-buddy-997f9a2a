@@ -5,12 +5,11 @@
  * + ces frais, pour que le total corresponde (au plus près) à ce que
  * SwyChr prélève réellement sur sa page de paiement.
  *
- * Ajustez les constantes ci-dessous selon les taux réels visibles
- * dans le tableau de bord SwyChr / AccountPe.
+ * SwyChr ajoute actuellement 2,5 % lorsque `pass_digital_charge` est activé.
  */
 
-/** Pourcentage ajouté (0.05 = 5 %). */
-export const FEE_PERCENT = 0.05;
+/** Pourcentage ajouté par SwyChr (0.025 = 2,5 %). */
+export const FEE_PERCENT = 0.025;
 
 /** Frais fixes ajoutés, exprimés en devise locale (0 = aucun). */
 export const FEE_FIXED_LOCAL = 0;

@@ -184,7 +184,9 @@ export const startPayment = createServerFn({ method: "POST" })
       countryCode: country.code,
       name: data.fullName,
       transactionId,
-      amount: totalLocal,
+      // SwyChr ajoute lui-même les frais lorsque `pass_digital_charge` est actif.
+      // Envoyer le montant de base évite de facturer ces frais deux fois.
+      amount: fees.base,
       currency: country.currency,
       email,
       mobile,

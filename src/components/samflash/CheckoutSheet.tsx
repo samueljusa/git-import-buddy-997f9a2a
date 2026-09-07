@@ -135,7 +135,9 @@ export function CheckoutSheet({
       setTransactionId(res.transactionId);
       setPaymentLink(res.paymentLink);
       setStep("waiting");
-      window.open(res.paymentLink, "_blank", "noopener,noreferrer");
+      // Une nouvelle fenêtre ouverte après l'appel réseau est souvent bloquée
+      // sur mobile. La navigation directe garantit l'ouverture de SwyChr.
+      window.location.assign(res.paymentLink);
     } catch {
       setError("Paiement impossible pour le moment.");
     } finally {
@@ -472,7 +474,8 @@ export function CheckoutSheet({
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
             <p className="text-lg font-semibold">Paiement en attente</p>
             <p className="max-w-xs text-sm text-muted-foreground">
-              Validez la demande sur votre téléphone. Cette page se met à jour automatiquement.
+              Confirmez d’abord sur la page SwyChr qui vient de s’ouvrir, puis validez la demande
+              reçue sur votre téléphone.
             </p>
             {statusMessage && <p className="text-xs text-muted-foreground">{statusMessage}</p>}
             {paymentLink && (
