@@ -129,7 +129,10 @@ export function CheckoutSheet({
       setTransactionId(res.transactionId);
       setPaymentLink(res.paymentLink);
       setStep("waiting");
-      window.open(res.paymentLink, "_blank", "noopener,noreferrer");
+      // Sur mobile, l'ouverture d'un nouvel onglet est souvent bloquée :
+      // dans ce cas on redirige directement vers la page de paiement.
+      const win = window.open(res.paymentLink, "_blank", "noopener,noreferrer");
+      if (!win) window.location.assign(res.paymentLink);
     } catch {
       setError("Paiement impossible pour le moment.");
     } finally {
