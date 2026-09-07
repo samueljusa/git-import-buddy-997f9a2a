@@ -7,7 +7,12 @@ import {
   startPayment,
   getOrderStatus,
 } from "@/lib/payments.functions";
-import { SUPPORTED_COUNTRIES, formatLocalAmount, operatorPrefixes } from "@/lib/payments/countries";
+import {
+  SUPPORTED_COUNTRIES,
+  formatLocalAmount,
+  operatorPrefixes,
+  formatHint,
+} from "@/lib/payments/countries";
 import { useAuth } from "@/hooks/useAuth";
 
 type Step = "mode" | "country" | "method" | "details" | "card" | "waiting" | "done" | "failed";
@@ -360,7 +365,12 @@ export function CheckoutSheet({
                   >
                     <span>{m.label}</span>
                     {m.mobileFormat && (
-                      <span className="text-xs text-muted-foreground">{m.mobileFormat}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {selectedCountry
+                          ? (formatHint(selectedCountry.code, m.label, m.mobileFormat, m.length) ??
+                            m.mobileFormat)
+                          : m.mobileFormat}
+                      </span>
                     )}
                   </button>
                 </li>
@@ -402,7 +412,11 @@ export function CheckoutSheet({
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 className="mt-1 w-full rounded-2xl border border-border bg-card/40 px-4 py-3"
-                placeholder={method?.mobileFormat ?? "Ex : 2376XXXXXXXX"}
+                placeholder={
+                  (selectedCountry && method
+                    ? formatHint(selectedCountry.code, method.label, method.mobileFormat, method.length)
+                    : method?.mobileFormat) ?? "Ex : 2376XXXXXXXX"
+                }
               />
               {(method?.length || prefixes) && (
                 <p className="mt-1 text-xs text-muted-foreground">
