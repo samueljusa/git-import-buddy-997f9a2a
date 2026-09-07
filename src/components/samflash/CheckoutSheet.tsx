@@ -111,6 +111,9 @@ export function CheckoutSheet({
     if (!method || !selectedCountry) return;
     setBusy(true);
     setError(null);
+    // Ouvre l'onglet immédiatement, pendant le geste utilisateur : après un
+    // appel réseau, window.open serait bloqué par le bloqueur de pop-ups.
+    const payWindow = window.open("about:blank", "_blank", "noopener,noreferrer");
     try {
       const res = await pay({
         data: {
@@ -123,17 +126,21 @@ export function CheckoutSheet({
         },
       });
       if (!res.ok) {
+        payWindow?.close();
         setError(res.message);
         return;
       }
       setTransactionId(res.transactionId);
       setPaymentLink(res.paymentLink);
       setStep("waiting");
-      // Sur mobile, l'ouverture d'un nouvel onglet est souvent bloquée :
-      // dans ce cas on redirige directement vers la page de paiement.
-      const win = window.open(res.paymentLink, "_blank", "noopener,noreferrer");
-      if (!win) window.location.assign(res.paymentLink);
+      if (payWindow) {
+        payWindow.location.href = res.paymentLink;
+      } else {
+        // Pop-up bloquée malgré tout : redirection directe.
+        window.location.assign(res.paymentLink);
+      }
     } catch {
+      payWindow?.close();
       setError("Paiement impossible pour le moment.");
     } finally {
       setBusy(false);
