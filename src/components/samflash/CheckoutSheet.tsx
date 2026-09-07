@@ -7,12 +7,7 @@ import {
   startPayment,
   getOrderStatus,
 } from "@/lib/payments.functions";
-import {
-  SUPPORTED_COUNTRIES,
-  formatLocalAmount,
-  operatorPrefixes,
-  formatHint,
-} from "@/lib/payments/countries";
+import { SUPPORTED_COUNTRIES, formatLocalAmount, operatorPrefixes } from "@/lib/payments/countries";
 import { useAuth } from "@/hooks/useAuth";
 
 type Step = "mode" | "country" | "method" | "details" | "card" | "waiting" | "done" | "failed";
@@ -111,9 +106,6 @@ export function CheckoutSheet({
     if (!method || !selectedCountry) return;
     setBusy(true);
     setError(null);
-    // Ouvre l'onglet immédiatement, pendant le geste utilisateur : après un
-    // appel réseau, window.open serait bloqué par le bloqueur de pop-ups.
-    const payWindow = window.open("about:blank", "_blank", "noopener,noreferrer");
     try {
       const res = await pay({
         data: {
@@ -126,21 +118,14 @@ export function CheckoutSheet({
         },
       });
       if (!res.ok) {
-        payWindow?.close();
         setError(res.message);
         return;
       }
       setTransactionId(res.transactionId);
       setPaymentLink(res.paymentLink);
       setStep("waiting");
-      if (payWindow) {
-        payWindow.location.href = res.paymentLink;
-      } else {
-        // Pop-up bloquée malgré tout : redirection directe.
-        window.location.assign(res.paymentLink);
-      }
+      window.open(res.paymentLink, "_blank", "noopener,noreferrer");
     } catch {
-      payWindow?.close();
       setError("Paiement impossible pour le moment.");
     } finally {
       setBusy(false);
@@ -375,12 +360,7 @@ export function CheckoutSheet({
                   >
                     <span>{m.label}</span>
                     {m.mobileFormat && (
-                      <span className="text-xs text-muted-foreground">
-                        {selectedCountry
-                          ? (formatHint(selectedCountry.code, m.label, m.mobileFormat, m.length) ??
-                            m.mobileFormat)
-                          : m.mobileFormat}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{m.mobileFormat}</span>
                     )}
                   </button>
                 </li>
@@ -422,11 +402,7 @@ export function CheckoutSheet({
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 className="mt-1 w-full rounded-2xl border border-border bg-card/40 px-4 py-3"
-                placeholder={
-                  (selectedCountry && method
-                    ? formatHint(selectedCountry.code, method.label, method.mobileFormat, method.length)
-                    : method?.mobileFormat) ?? "Ex : 2376XXXXXXXX"
-                }
+                placeholder={method?.mobileFormat ?? "Ex : 2376XXXXXXXX"}
               />
               {(method?.length || prefixes) && (
                 <p className="mt-1 text-xs text-muted-foreground">
