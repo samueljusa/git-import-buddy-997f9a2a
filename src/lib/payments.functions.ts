@@ -129,8 +129,11 @@ export const startPayment = createServerFn({ method: "POST" })
         ? Number(price.amount_eur_yearly)
         : Number(price.amount_eur);
 
-    const mobile = data.mobile.replace(/[^0-9]/g, "");
-    if (mobile.length < 8) return { ok: false as const, message: "Numéro de téléphone invalide." };
+    const { toInternationalMobile } = await import("@/lib/payments/countries");
+    const mobileLocal = data.mobile.replace(/[^0-9]/g, "");
+    if (mobileLocal.length < 8) return { ok: false as const, message: "Numéro de téléphone invalide." };
+    // Le prestataire exige le format international (indicatif pays inclus).
+    const mobile = toInternationalMobile(country.code, mobileLocal);
 
     const { convertFromEur } = await import("@/lib/services/fx.server");
     const conv = await convertFromEur(amountEur, country.currency, country.zeroDecimal);
