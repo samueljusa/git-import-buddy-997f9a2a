@@ -157,7 +157,7 @@ export const startPayment = createServerFn({ method: "POST" })
       status: "en_attente",
       period: data.period,
       amount_eur: amountEur,
-      amount_local: conv.amount,
+      amount_local: totalLocal,
       currency: country.currency,
       exchange_rate: conv.rate,
       country_code: country.code,
@@ -184,7 +184,7 @@ export const startPayment = createServerFn({ method: "POST" })
       countryCode: country.code,
       name: data.fullName,
       transactionId,
-      amount: conv.amount,
+      amount: totalLocal,
       currency: country.currency,
       email,
       mobile,
@@ -213,7 +213,9 @@ export const startPayment = createServerFn({ method: "POST" })
       ok: true as const,
       transactionId,
       paymentLink: result.data.paymentLink,
-      amountLocal: conv.amount,
+      amountLocal: totalLocal,
+      baseAmountLocal: fees.base,
+      feeLocal: fees.fee,
       currency: country.currency,
     };
   });
