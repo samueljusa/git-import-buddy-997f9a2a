@@ -19,4 +19,4 @@
 - [x] Toasts sonorisés + Toaster monté globalement
 
 ## Notes
-- Les clés API (dont FAL_KEY) sont fournies via les variables d'environnement de l'hébergeur.
+- Les clés API (FAL_KEY, SWYCHR_API_KEY, etc.) sont enregistrées dans les secrets Lovable Cloud et lues côté serveur.

@@ -1,7 +1,7 @@
 /**
  * Moteur de génération média Fal.ai (xAI Grok Imagine).
  *
- * Clé serveur uniquement : process.env.FAL_KEY (déjà fournie par l'hébergeur).
+ * Clé serveur uniquement : process.env.FAL_KEY (secret Lovable Cloud).
  * Aucune clé n'est jamais exposée au navigateur.
  *
  * Endpoints utilisés :
