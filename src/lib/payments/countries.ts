@@ -45,10 +45,10 @@ export function formatLocalAmount(amount: number, currency: string): string {
  */
 const OPERATOR_PREFIXES: Record<string, { match: string[]; prefixes: string[] }[]> = {
   CD: [
-    { match: ["airtel"], prefixes: ["99", "97"] },
+    { match: ["airtel"], prefixes: ["99", "97", "98"] },
     { match: ["vodacom", "mpesa", "m-pesa"], prefixes: ["81", "82", "83"] },
     { match: ["orange"], prefixes: ["84", "85", "89"] },
-    { match: ["africell"], prefixes: ["90"] },
+    { match: ["africell", "afrimoney"], prefixes: ["90"] },
   ],
 };
 
@@ -60,4 +60,22 @@ export function operatorPrefixes(countryCode: string, methodLabel: string): stri
   const rule = rules.find((r) => r.match.some((m) => label.includes(m)));
   return rule ? rule.prefixes : null;
 }
+
+/**
+ * Exemple de numéro affiché : on remplace le préfixe générique renvoyé par
+ * l'API par le vrai préfixe de l'opérateur (ex : 99XXXXXXX pour Airtel RDC).
+ */
+export function formatHint(
+  countryCode: string,
+  methodLabel: string,
+  mobileFormat: string | null,
+  length: number | null,
+): string | null {
+  const prefixes = operatorPrefixes(countryCode, methodLabel);
+  const size = length ?? (mobileFormat ? mobileFormat.replace(/[^0-9Xx]/g, "").length : null);
+  if (!prefixes || prefixes.length === 0 || !size) return mobileFormat;
+  const p = prefixes[0]!;
+  return `${p}${"X".repeat(Math.max(0, size - p.length))}`;
+}
+
 
