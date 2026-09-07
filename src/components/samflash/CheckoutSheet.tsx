@@ -50,9 +50,13 @@ export function CheckoutSheet({
   const email = profile?.email ?? user?.email ?? "";
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
-  const [quote, setQuote] = useState<{ amountLocal: number; currency: string; amountEur: number } | null>(
-    null,
-  );
+  const [quote, setQuote] = useState<{
+    amountLocal: number;
+    currency: string;
+    amountEur: number;
+    baseAmountLocal?: number;
+    feeLocal?: number;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
@@ -77,7 +81,14 @@ export function CheckoutSheet({
         ]);
         if (m.ok) setMethods(m.methods);
         else setError(m.message);
-        if (q.ok) setQuote({ amountLocal: q.amountLocal, currency: q.currency, amountEur: q.amountEur });
+        if (q.ok)
+          setQuote({
+            amountLocal: q.amountLocal,
+            currency: q.currency,
+            amountEur: q.amountEur,
+            baseAmountLocal: q.baseAmountLocal,
+            feeLocal: q.feeLocal,
+          });
         else setError((prev) => prev ?? q.message);
       } catch {
         setError("Impossible de charger les moyens de paiement.");
@@ -343,6 +354,12 @@ export function CheckoutSheet({
                 <p className="text-xs text-muted-foreground">
                   soit {quote.amountEur.toFixed(2)} € — {selectedCountry?.name}
                 </p>
+                {quote.feeLocal != null && quote.feeLocal > 0 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    dont {formatLocalAmount(quote.feeLocal, quote.currency)} de frais de paiement
+                    inclus — aucun supplément sur la page de paiement
+                  </p>
+                )}
               </div>
             )}
             <p className="mb-3 text-sm text-muted-foreground">Choisissez un moyen de paiement</p>
@@ -417,7 +434,19 @@ export function CheckoutSheet({
             </div>
 
             {quote && (
-              <div className="rounded-2xl border border-border bg-card/40 p-4">
+              <div className="space-y-1 rounded-2xl border border-border bg-card/40 p-4">
+                {quote.feeLocal != null && quote.feeLocal > 0 && (
+                  <>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Abonnement</span>
+                      <span>{formatLocalAmount(quote.baseAmountLocal ?? quote.amountLocal, quote.currency)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Frais de paiement</span>
+                      <span>{formatLocalAmount(quote.feeLocal, quote.currency)}</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>
                   <span className="font-semibold">

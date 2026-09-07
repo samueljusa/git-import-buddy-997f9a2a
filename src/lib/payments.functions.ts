@@ -82,12 +82,18 @@ export const quotePrice = createServerFn({ method: "POST" })
     const conv = await convertFromEur(amountEur, country.currency, country.zeroDecimal);
     if (!conv.ok) return { ok: false as const, message: conv.message };
 
+    // Frais SwyChr ajoutés pour que le total affiché corresponde au prélèvement réel.
+    const { addPaymentFees } = await import("@/lib/payments/fees");
+    const fees = addPaymentFees(conv.amount, country.zeroDecimal);
+
     return {
       ok: true as const,
       label: price.label,
       period: data.period,
       amountEur,
-      amountLocal: conv.amount,
+      amountLocal: fees.total,
+      baseAmountLocal: fees.base,
+      feeLocal: fees.fee,
       currency: country.currency,
       rate: conv.rate,
     };
@@ -136,6 +142,10 @@ export const startPayment = createServerFn({ method: "POST" })
     const conv = await convertFromEur(amountEur, country.currency, country.zeroDecimal);
     if (!conv.ok) return { ok: false as const, message: conv.message };
 
+    const { addPaymentFees } = await import("@/lib/payments/fees");
+    const fees = addPaymentFees(conv.amount, country.zeroDecimal);
+    const totalLocal = fees.total;
+
     const transactionId = crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -147,7 +157,7 @@ export const startPayment = createServerFn({ method: "POST" })
       status: "en_attente",
       period: data.period,
       amount_eur: amountEur,
-      amount_local: conv.amount,
+      amount_local: totalLocal,
       currency: country.currency,
       exchange_rate: conv.rate,
       country_code: country.code,
@@ -174,7 +184,7 @@ export const startPayment = createServerFn({ method: "POST" })
       countryCode: country.code,
       name: data.fullName,
       transactionId,
-      amount: conv.amount,
+      amount: totalLocal,
       currency: country.currency,
       email,
       mobile,
@@ -203,7 +213,9 @@ export const startPayment = createServerFn({ method: "POST" })
       ok: true as const,
       transactionId,
       paymentLink: result.data.paymentLink,
-      amountLocal: conv.amount,
+      amountLocal: totalLocal,
+      baseAmountLocal: fees.base,
+      feeLocal: fees.fee,
       currency: country.currency,
     };
   });
