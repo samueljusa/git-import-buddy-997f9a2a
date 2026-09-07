@@ -82,12 +82,18 @@ export const quotePrice = createServerFn({ method: "POST" })
     const conv = await convertFromEur(amountEur, country.currency, country.zeroDecimal);
     if (!conv.ok) return { ok: false as const, message: conv.message };
 
+    // Frais SwyChr ajoutés pour que le total affiché corresponde au prélèvement réel.
+    const { addPaymentFees } = await import("@/lib/payments/fees");
+    const fees = addPaymentFees(conv.amount, country.zeroDecimal);
+
     return {
       ok: true as const,
       label: price.label,
       period: data.period,
       amountEur,
-      amountLocal: conv.amount,
+      amountLocal: fees.total,
+      baseAmountLocal: fees.base,
+      feeLocal: fees.fee,
       currency: country.currency,
       rate: conv.rate,
     };
@@ -135,6 +141,10 @@ export const startPayment = createServerFn({ method: "POST" })
     const { convertFromEur } = await import("@/lib/services/fx.server");
     const conv = await convertFromEur(amountEur, country.currency, country.zeroDecimal);
     if (!conv.ok) return { ok: false as const, message: conv.message };
+
+    const { addPaymentFees } = await import("@/lib/payments/fees");
+    const fees = addPaymentFees(conv.amount, country.zeroDecimal);
+    const totalLocal = fees.total;
 
     const transactionId = crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
