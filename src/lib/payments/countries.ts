@@ -45,7 +45,7 @@ export function formatLocalAmount(amount: number, currency: string): string {
  */
 const OPERATOR_PREFIXES: Record<string, { match: string[]; prefixes: string[] }[]> = {
   CD: [
-    { match: ["airtel"], prefixes: ["99", "97"] },
+    { match: ["airtel"], prefixes: ["99", "98", "97"] },
     { match: ["vodacom", "mpesa", "m-pesa"], prefixes: ["81", "82", "83"] },
     { match: ["orange"], prefixes: ["84", "85", "89"] },
     { match: ["africell"], prefixes: ["90"] },

@@ -53,8 +53,9 @@ export async function convertFromEur(
     return { ok: false, message: `Taux de change introuvable pour ${currency}.` };
   }
 
+  // Conversion exacte : arrondi au plus proche, aucune marge ajoutée.
   const raw = amountEur * rate;
-  const amount = zeroDecimal ? Math.ceil(raw) : Math.round(raw * 100) / 100;
+  const amount = zeroDecimal ? Math.round(raw) : Math.round(raw * 100) / 100;
 
   return { ok: true, rate, amount, cached: Boolean(fresh) };
 }
