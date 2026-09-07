@@ -1,0 +1,42 @@
+{
+  "source_project": "git-import-buddy",
+  "target_project": "9a360849-9de7-4537-a0eb-2d1d5a7ad695",
+  "status": "code_migration_complete",
+  "summary": "Application git-import-buddy migrée dans le projet Lovable actuel. Le build passe, le backend est synchronisé, l'authentification Google et le serveur OAuth sont activés.",
+  "migrations": {
+    "applied": [
+      "20260831072734",
+      "consolidated_final_schema"
+    ],
+    "skipped": [
+      "20260904071336"
+    ],
+    "notes": [
+      "La migration consolidée finalise les tables community_gallery, app_settings, user_quotas, les colonnes images_used/videos_used/video_pause_until sur daily_usage, promo_claimed_at sur profiles, plan_type/is_active sur subscriptions, et les fonctions de quotas images/vidéos.",
+      "La migration 20260904071336 a été omise car elle dupliquait les politiques créées par 20260904050535 et 20260904051600."
+    ]
+  },
+  "storage": {
+    "buckets_created": ["generations", "avatars"],
+    "policies": "Les politiques storage.objects existantes ont été conservées ; une politique staff a été ajoutée."
+  },
+  "auth": {
+    "google": "enabled via supabase--configure_social_auth",
+    "oauth_server": "enabled via supabase--configure_oauth_server",
+    "email_confirmation": "désactivée (héritée du projet source)"
+  },
+  "security_linter": {
+    "known_warning": "0029_authenticated_security_definer_function_executable",
+    "detail": "Les fonctions SECURITY DEFINER (reserve_quota, refund_quota, reserve_media_quota, refund_media_quota, reserve_video_seconds, refund_video_seconds, current_tier, handle_new_user, has_role) sont intentionnellement exécutables par authenticated pour l'application. Elles vérifient l'identité de l'utilisateur dans leur logique ou sont appelées par des triggers/policies."
+  },
+  "verification": {
+    "build_dev": "passed",
+    "preview_home": "loaded",
+    "remaining": [
+      "Vérifier la connexion utilisateur (Google ou email) en prévisualisation.",
+      "Vérifier la génération d'image et la galerie communautaire.",
+      "Vérifier le paiement Stripe en mode test si des clés sont configurées."
+    ]
+  },
+  "blockers": []
+}
